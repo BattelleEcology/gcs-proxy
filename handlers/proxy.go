@@ -103,13 +103,13 @@ func (h *proxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	resp.WriteHeader(gcsResp.StatusCode)
 	byteswritten, err := io.Copy(resp, gcsResp.Body)
-	entry := h.logger.WithFields(fields)
 	if err != nil {
 		fields := logrus.Fields{
-			"byteswritten":        byteswritten,
-			"error":      err.Error()
+			"byteswritten": byteswritten,
+			"error":        err.Error(),
+		}
 		entry := h.logger.WithFields(fields)
-    entry.Debug("Error copying Body")
+		entry.Debug("Error copying Body")
 	}
 }
 
