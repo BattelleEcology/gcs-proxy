@@ -102,7 +102,15 @@ func (h *proxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	resp.WriteHeader(gcsResp.StatusCode)
-	io.Copy(resp, gcsResp.Body)
+	byteswritten, err := io.Copy(resp, gcsResp.Body)
+	entry := h.logger.WithFields(fields)
+	if err != nil {
+		fields := logrus.Fields{
+			"byteswritten":        byteswritten,
+			"error":      err.Error()
+		entry := h.logger.WithFields(fields)
+    entry.Debug("Error copying Body")
+	}
 }
 
 // Proxy returns the proxy handler.
