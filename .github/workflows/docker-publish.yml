@@ -76,7 +76,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       # Scan with trivy and import sarif
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.2.2
+        uses: aquasecurity/trivy-action@0.5.0
         with:
           image-ref: "ghcr.io/dexidp/dex:${{ steps.tags.outputs.version }}"
           format: "template"
