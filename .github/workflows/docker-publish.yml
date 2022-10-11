@@ -54,7 +54,7 @@ jobs:
       # https://github.com/docker/metadata-action
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -79,17 +79,16 @@ jobs:
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       # Scan with trivy and import sarif
-      # - name: Run Trivy vulnerability scanner
-      #   uses: aquasecurity/trivy-action@0.7.1
-      #   with:
-      #     # image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}"
-      #     image-ref: "${{ fromJSON(steps.meta.outputs.json).tags[1] }}"
-      #     format: "sarif"
-      #     output: "trivy-results.sarif"
-      #   if: github.event_name == 'push'
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.7.1
+        with:
+          image-ref: "${{ fromJSON(steps.meta.outputs.json).tags[1] }}"
+          format: "sarif"
+          output: "trivy-results.sarif"
+        if: github.event_name == 'push'
 
-      # - name: Upload Trivy scan results to GitHub Security tab
-      #   uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: "trivy-results.sarif"
-      #   if: github.event_name == 'push'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
+        if: github.event_name == 'push'
