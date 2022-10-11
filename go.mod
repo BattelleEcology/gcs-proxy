@@ -6,7 +6,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/google/gops v0.3.22
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	google.golang.org/api v0.98.0
 )
 
