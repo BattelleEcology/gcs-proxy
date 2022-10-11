@@ -75,17 +75,21 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # Scan with trivy and import sarif
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.2.2
-        with:
-          image-ref: "ghcr.io/dexidp/dex:${{ steps.tags.outputs.version }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-        if: github.event_name == 'push'
+      - name: Set short sha outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      # Scan with trivy and import sarif
+      # - name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@0.7.1
+      #   with:
+      #     # image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}"
+      #     image-ref: "${{ fromJSON(steps.meta.outputs.json).tags[1] }}"
+      #     format: "sarif"
+      #     output: "trivy-results.sarif"
+      #   if: github.event_name == 'push'
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: "trivy-results.sarif"
-        if: github.event_name == 'push'
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: "trivy-results.sarif"
+      #   if: github.event_name == 'push'
