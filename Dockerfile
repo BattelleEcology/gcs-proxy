@@ -11,7 +11,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o gcs-proxy .
-FROM scratch as final
+# FROM scratch as final
+FROM alpine:3.17 as final
 COPY --from=builder /myapp/gcs-proxy /
 # Copy minimal configuration from builder
 COPY --from=builder /etc/nsswitch.conf.min /etc/nsswitch.conf
