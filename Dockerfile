@@ -1,4 +1,4 @@
-FROM golang:1.19.2 AS builder
+FROM golang:1.20.0 AS builder
 ENV GO111MODULE=on
 WORKDIR /myapp
 RUN echo "hosts: files dns" > /etc/nsswitch.conf.min
