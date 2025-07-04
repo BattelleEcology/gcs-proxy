@@ -97,7 +97,7 @@ jobs:
           provenance: true
       # Scan with trivy and import sarif
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.31.0
+        uses: aquasecurity/trivy-action@0.32.0
         with:
           image-ref: "${{ fromJSON(steps.meta.outputs.json).tags[1] }}"
           format: "sarif"
