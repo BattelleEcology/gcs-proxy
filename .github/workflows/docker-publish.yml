@@ -6,8 +6,8 @@ name: Docker
 # documentation.
 
 on:
-  schedule:
-    - cron: '34 8 * * *'
+  # schedule:
+  #   - cron: '34 8 * * *'
   push:
     branches: [ main ]
     # Publish semver tags as releases.
@@ -97,7 +97,7 @@ jobs:
           provenance: true
       # Scan with trivy and import sarif
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.31.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: "${{ fromJSON(steps.meta.outputs.json).tags[1] }}"
           format: "sarif"
