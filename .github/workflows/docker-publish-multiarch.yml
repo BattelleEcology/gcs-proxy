@@ -58,18 +58,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Set up Docker Context for Buildx
-        # This step sets up a Docker context for Buildx.
-        # It creates a new context named "builders" that will be used for building the Docker image.
-        # The context allows Buildx to use the Docker daemon for building images.
-        id: buildx-context
-        run: |
-          docker context create builders
+      # - name: Set up Docker Context for Buildx
+      #   # This step sets up a Docker context for Buildx.
+      #   # It creates a new context named "builders" that will be used for building the Docker image.
+      #   # The context allows Buildx to use the Docker daemon for building images.
+      #   id: buildx-context
+      #   run: |
+      #     docker context create builders
 
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
         with:
-          endpoint: builders
+          # endpoint: builders
           platforms: ${{ matrix.platform }}
 
       # Handle Google pkg.dev login
@@ -104,7 +104,7 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         with:
-          context: builders
+          # context: builders
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
