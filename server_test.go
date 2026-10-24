@@ -59,10 +59,10 @@ func TestServerMultiPrefixes(t *testing.T) {
 			ExpectedStatus: http.StatusPartialContent,
 			ExpectedHeader: http.Header{
 				"Accept-Ranges":  []string{"bytes"},
-				"Content-Length": []string{"8"},
+				"Content-Length": []string{"9"},
 				"Content-Range":  []string{"bytes 2-10/16"},
 			},
-			ExpectedBody: "me nicer",
+			ExpectedBody: "me nicer ",
 		},
 		{
 			TestCase:       "map: list of files",

@@ -49,10 +49,10 @@ func TestProxyHandler(t *testing.T) {
 			ExpectedStatus: http.StatusPartialContent,
 			ExpectedHeader: http.Header{
 				"Accept-Ranges":  []string{"bytes"},
-				"Content-Length": []string{"8"},
+				"Content-Length": []string{"9"},
 				"Content-Range":  []string{"bytes 2-10/16"},
 			},
-			ExpectedBody: "me nicer",
+			ExpectedBody: "me nicer ",
 		},
 		{
 			TestCase:       "file attrs",
@@ -73,7 +73,7 @@ func TestProxyHandler(t *testing.T) {
 			ReqHeader:      nil,
 			ExpectedStatus: http.StatusNotFound,
 			ExpectedHeader: nil,
-			ExpectedBody:   "not found\n",
+			ExpectedBody:   "Not Found\n",
 		},
 		{
 			TestCase:       "file attrs - object not found",
