@@ -112,9 +112,10 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 	addr, cleanup := testProxyServer(t, Config{
 		BucketName: "my-bucket",
 		Proxy: ProxyConfig{
-			Endpoint:     "/proxy/",
-			BucketOnPath: true,
-			Timeout:      time.Second,
+			Endpoint:       "/proxy/",
+			BucketOnPath:   true,
+			AllowedBuckets: []string{"your-bucket"},
+			Timeout:        time.Second,
 		},
 	})
 	defer cleanup()
@@ -124,6 +125,41 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 			Method:         http.MethodGet,
 			Addr:           addr,
 			ExpectedStatus: http.StatusOK,
+		},
+		{
+			TestCase:       "proxy: download file from the configured bucket",
+			Method:         http.MethodGet,
+			Addr:           addr + "/my-bucket/musics/music/music1.txt",
+			ExpectedStatus: http.StatusOK,
+			ExpectedBody:   "some nice music",
+		},
+		{
+			TestCase:       "proxy: bucket not allowed",
+			Method:         http.MethodGet,
+			Addr:           addr + "/other-bucket/musics/music/music1.txt",
+			ExpectedStatus: http.StatusNotFound,
+			ExpectedBody:   "not found\n",
+		},
+		{
+			TestCase:       "proxy: bucket listing",
+			Method:         http.MethodGet,
+			Addr:           addr + "/my-bucket/",
+			ExpectedStatus: http.StatusNotFound,
+			ExpectedBody:   "not found\n",
+		},
+		{
+			TestCase:       "proxy: bucket without object",
+			Method:         http.MethodGet,
+			Addr:           addr + "/my-bucket",
+			ExpectedStatus: http.StatusNotFound,
+			ExpectedBody:   "not found\n",
+		},
+		{
+			TestCase:       "proxy: dot segments",
+			Method:         http.MethodGet,
+			Addr:           addr + "/my-bucket/musics/../musics/music/music1.txt",
+			ExpectedStatus: http.StatusNotFound,
+			ExpectedBody:   "not found\n",
 		},
 		{
 			TestCase:       "proxy: download file",

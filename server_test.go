@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -133,6 +134,37 @@ func TestServerMultiPrefixes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.TestCase, test.Run)
+	}
+}
+
+func TestStripPrefix(t *testing.T) {
+	tests := []struct {
+		rawURL      string
+		prefix      string
+		match       bool
+		wantPath    string
+		wantRawPath string
+	}{
+		{"/proxy/a/b", "/proxy/", true, "/a/b", ""},
+		{"/proxy/a/b", "/proxy", true, "/a/b", ""},
+		{"/proxy", "/proxy", true, "/", ""},
+		{"/proxyx/a", "/proxy", false, "", ""},
+		{"/proxyx/a", "/proxy/", false, "", ""},
+		{"/a/b", "", true, "/a/b", ""},
+		{"/proxy/a%2Fb", "/proxy/", true, "/a/b", "/a%2Fb"},
+	}
+	for _, test := range tests {
+		u, err := url.Parse(test.rawURL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := stripPrefix(u, test.prefix); got != test.match {
+			t.Errorf("stripPrefix(%q, %q) = %v, want %v", test.rawURL, test.prefix, got, test.match)
+			continue
+		}
+		if test.match && (u.Path != test.wantPath || u.RawPath != test.wantRawPath) {
+			t.Errorf("stripPrefix(%q, %q): got path %q raw %q, want %q raw %q", test.rawURL, test.prefix, u.Path, u.RawPath, test.wantPath, test.wantRawPath)
+		}
 	}
 }
 

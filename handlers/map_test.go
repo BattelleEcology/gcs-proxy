@@ -123,7 +123,7 @@ func TestServerMapBucketNotFound(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusInternalServerError {
-		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusInternalServerError, resp.StatusCode)
+	if resp.StatusCode != http.StatusBadGateway {
+		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusBadGateway, resp.StatusCode)
 	}
 }

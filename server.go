@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -14,14 +15,9 @@ func getHandler(c handlers.Config, client *storage.Client, hc *http.Client) http
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case strings.HasPrefix(r.URL.Path, c.Proxy.Endpoint):
-			r.URL.Path = strings.Replace(r.URL.Path, c.Proxy.Endpoint, "", 1)
-			if !strings.HasPrefix(r.URL.Path, "/") {
-				r.URL.Path = "/" + r.URL.Path
-			}
+		case stripPrefix(r.URL, c.Proxy.Endpoint):
 			proxyHandler.ServeHTTP(w, r)
-		case strings.HasPrefix(r.URL.Path, c.Map.Endpoint):
-			r.URL.Path = strings.Replace(r.URL.Path, c.Map.Endpoint, "", 1)
+		case stripPrefix(r.URL, c.Map.Endpoint):
 			mapHandler.ServeHTTP(w, r)
 		case r.URL.Path == "/":
 			// healthcheck
@@ -30,4 +26,39 @@ func getHandler(c handlers.Config, client *storage.Client, hc *http.Client) http
 			http.Error(w, "not found", http.StatusNotFound)
 		}
 	}
+}
+
+// stripPrefix removes prefix from u's path if it matches, leaving a path that
+// starts with "/". RawPath is updated too so that escaped characters in object
+// names are kept.
+func stripPrefix(u *url.URL, prefix string) bool {
+	p, ok := cutPathPrefix(u.Path, prefix)
+	if !ok {
+		return false
+	}
+	var rawPath string
+	if u.RawPath != "" {
+		if rawPath, ok = cutPathPrefix(u.RawPath, prefix); !ok {
+			return false
+		}
+	}
+	u.Path, u.RawPath = p, rawPath
+	return true
+}
+
+// cutPathPrefix matches prefix against whole path segments: "/proxy" matches
+// "/proxy" and "/proxy/a", but not "/proxyx". An empty prefix matches
+// everything.
+func cutPathPrefix(p, prefix string) (string, bool) {
+	rest, ok := strings.CutPrefix(p, prefix)
+	if !ok {
+		return "", false
+	}
+	if strings.HasPrefix(rest, "/") {
+		return rest, true
+	}
+	if rest != "" && prefix != "" && !strings.HasSuffix(prefix, "/") {
+		return "", false
+	}
+	return "/" + rest, true
 }
