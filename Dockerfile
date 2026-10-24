@@ -1,24 +1,19 @@
 FROM golang:1.27.2 AS builder
-ENV GO111MODULE=on
 WORKDIR /myapp
-RUN echo "hosts: files dns" > /etc/nsswitch.conf.min
-RUN echo "nobody:x:65534:65534:Nobody:/:" > /etc/passwd.min
-RUN apt-get update && \
-    apt-get install -y ca-certificates
-
-
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o gcs-proxy .
-# FROM scratch as final
+# Declared here, not at the top, so a new version doesn't invalidate the
+# module download layer.
+ARG VERSION=SNAPSHOT
+RUN CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION}" -o gcs-proxy .
+
+# alpine already provides CA certificates, /etc/nsswitch.conf and the nobody
+# user.
 FROM alpine:3.24.2 AS final
 COPY --from=builder /myapp/gcs-proxy /
-# Copy minimal configuration from builder
-COPY --from=builder /etc/nsswitch.conf.min /etc/nsswitch.conf
-COPY --from=builder /etc/passwd.min /etc/passwd
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
+# The gops agent writes its port file under $HOME/.config by default, and
+# nobody's home (/) isn't writable.
+ENV GOPS_CONFIG_DIR=/tmp/gops
 USER nobody
-
-ENTRYPOINT ["./gcs-proxy"]
+ENTRYPOINT ["/gcs-proxy"]

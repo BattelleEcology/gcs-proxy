@@ -49,6 +49,10 @@ jobs:
       # repo name instead.
       push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
       cache: true
+      # Stamp the binary's --version with the image version from
+      # docker/metadata-action (the git tag, branch or pr-<n>).
+      build-args: |
+        VERSION={{meta.version}}
       meta-images: |
         ${{ vars.SHARED_WIF_LOCATON }}-docker.pkg.dev/${{ vars.SHARED_WIF_PROJECT }}/${{ vars.SHARED_WIF_REPO }}/${{ github.event.repository.name }}
       meta-tags: |
