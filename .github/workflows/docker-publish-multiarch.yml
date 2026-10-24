@@ -9,11 +9,11 @@ on:
   # schedule:
   #   - cron: '34 8 * * *'
   push:
-    branches: [ main ]
+    branches: [ master ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch: {}
 
 env:
@@ -161,7 +161,7 @@ jobs:
           annotations: |
             type=org.opencontainers.image.description,value=${{ github.event.repository.description || 'No description provided' }}
           tags: |
-            type=raw,value=main,enable=${{ github.ref_name == 'main' }}
+            type=raw,value=main,enable=${{ github.ref_name == 'master' }}
             type=ref,event=branch
             type=ref,event=tag
             type=ref,event=pr

@@ -9,7 +9,17 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every weekday
       interval: "daily"
+    # Bundle all action updates into a single PR
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: gomod
     directory: /
     schedule:
       interval: daily
+    # Bundle all Go module updates into a single PR
+    groups:
+      go-modules:
+        patterns:
+          - "*"

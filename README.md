@@ -22,6 +22,8 @@ The following environment variables control the behavior of gcs-helper:
 | GCS_HELPER_LOG_LEVEL             | debug         | No       | Logging level                                                                                                                                                           |
 | GCS_HELPER_PROXY_PREFIX          |               | No       | Prefix to use for the proxy binding. Required if running in map and proxy modes (example value: ``/proxy/``)                                                        |
 | GCS_HELPER_PROXY_TIMEOUT         | 10s           | No       | Defines the maximum time in serving the proxy requests, this is a hard timeout and includes retries                                                                    |
+| GCS_HELPER_PROXY_LOG_HEADERS     |               | No       | Comma-separated list of request headers to include in the proxy request logs (example value: ``Accept,Range``)                                                         |
+| GCS_HELPER_PROXY_BUCKET_ON_PATH  | false         | No       | Send proxy requests path-style (``storage.googleapis.com/<path>``) instead of to ``<bucket>.storage.googleapis.com``, so the request path must start with the bucket name |
 | GCS_HELPER_MAP_PREFIX            |               | No       | Prefix to use for the map binding. Required if running in map and proxy modes (example value: ``/map/``)                                                                |
 | GCS_HELPER_MAP_REGEX_FILTER      |               | No       | A regular expression that is used to deliver only those files that match the specified naming convention (example value: \d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$) |
 
