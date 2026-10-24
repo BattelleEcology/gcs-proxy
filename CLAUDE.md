@@ -44,7 +44,7 @@ Tests use `fake-gcs-server` (`fakestorage`) with `NoListener: true`. `server.HTT
 
 ## CI / release
 
-- `.github/workflows/docker-publish-multiarch.yml` builds amd64 and arm64 images and pushes them to Google Artifact Registry, using Workload Identity Federation for auth, then runs a Trivy scan. It runs on pushes and PRs to `master`, on `v*.*.*` tags and on manual dispatch. The floating `main` image tag follows `master`.
+- `.github/workflows/docker-publish-multiarch.yml` calls Docker's reusable `docker/github-builder` `build.yml` workflow. It builds amd64 and arm64 on native runners, merges them into one multi-arch image, signs the provenance and pushes to Google Artifact Registry, logging in through the builder's `gcp-wif` registry identity (Workload Identity Federation). Inputs to the reusable workflow can't use the `env` context, so the registry paths come straight from `vars.SHARED_WIF_*` (`SHARED_WIF_LOCATON` really is spelled that way). A separate `scan` job runs Trivy on the pushed digest for push events. The workflow runs on pushes and PRs to `master`, on `v*.*.*` tags and on manual dispatch. PR images are pushed as well, except from forks. The floating `main` image tag follows `master`.
 - `codeql-analysis.yml` runs on `master`. No GitHub workflow runs `go test`.
 - `.drone.jsonnet` / `.drone.yml` are left over from the upstream NYTimes project (Go 1.12, Docker Hub `nytimes/gcs-helper`) and aren't used.
 - Dependabot checks Go modules, GitHub Actions and the Dockerfile base images daily. Actions are pinned to commit SHAs with a version comment.
