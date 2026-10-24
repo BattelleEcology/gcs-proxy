@@ -44,8 +44,10 @@ jobs:
       output: image
       platforms: linux/amd64,linux/arm64
       # PR images are pushed too (tagged pr-<n>), except from forks, which
-      # can't authenticate to Google.
-      push: ${{ github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork }}
+      # can't authenticate to Google. This repo is itself a fork of
+      # NYTimes/gcs-helper, so head.repo.fork is always true; compare the
+      # repo name instead.
+      push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
       cache: true
       meta-images: |
         ${{ vars.SHARED_WIF_LOCATON }}-docker.pkg.dev/${{ vars.SHARED_WIF_PROJECT }}/${{ vars.SHARED_WIF_REPO }}/${{ github.event.repository.name }}
