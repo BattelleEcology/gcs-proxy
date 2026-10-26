@@ -1,10 +1,13 @@
-IMG := gcr.io/beecash-prod/infra/gcs-proxy
+IMG ?= gcs-proxy
 SHA := $(shell git rev-parse --short HEAD)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 TAG := ${BRANCH}-${SHA}
 
+# Local builds only; CI publishes the images.
 docker-build:
-	docker build -t ${IMG}:${TAG} .
+	docker build --build-arg VERSION=${TAG} -t ${IMG}:${TAG} .
 
-docker-push: docker-build
-	docker push ${IMG}:${TAG}
+test:
+	go test -race ./...
+
+.PHONY: docker-build test

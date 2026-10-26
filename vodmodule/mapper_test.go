@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gcs-helper/v3/internal/testhelper"
@@ -82,6 +83,15 @@ func TestMap(t *testing.T) {
 				},
 			},
 		},
+		{
+			"subdirectories are skipped",
+			MapOptions{
+				Prefix: "musics/",
+			},
+			Mapping{
+				Sequences: []Sequence{},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -95,6 +105,19 @@ func TestMap(t *testing.T) {
 				t.Errorf("wrong mapping returned\nwant %#v\ngot  %#v", test.expected, m)
 			}
 		})
+	}
+}
+
+func TestMapBucketNotFoundIsNotRetried(t *testing.T) {
+	server, bucket := fakeBucketHandle(t, "no-such-bucket")
+	defer server.Stop()
+	start := time.Now()
+	_, err := NewMapper(bucket).Map(context.TODO(), MapOptions{Prefix: "videos/"})
+	if err == nil {
+		t.Fatal("unexpected <nil> error")
+	}
+	if elapsed := time.Since(start); elapsed >= retryDelay {
+		t.Errorf("took %s, the listing was retried", elapsed)
 	}
 }
 

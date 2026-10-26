@@ -12,18 +12,19 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	setEnvs(map[string]string{
-		"GCS_HELPER_LISTEN":               "0.0.0.0:3030",
-		"GCS_HELPER_BUCKET_NAME":          "some-bucket",
-		"GCS_HELPER_LOG_LEVEL":            "info",
-		"GCS_HELPER_MAP_PREFIX":           "/map/",
-		"GCS_HELPER_MAP_REGEX_FILTER":     `(240|360|424|480|720|1080)p\.(mp4|vtt|srt)$`,
-		"GCS_HELPER_PROXY_PREFIX":         "/proxy/",
-		"GCS_HELPER_PROXY_LOG_HEADERS":    "Accept,Range",
-		"GCS_HELPER_PROXY_TIMEOUT":        "20s",
-		"GCS_HELPER_PROXY_BUCKET_ON_PATH": "true",
-		"GCS_CLIENT_TIMEOUT":              "60s",
-		"GCS_CLIENT_IDLE_CONN_TIMEOUT":    "3m",
-		"GCS_CLIENT_MAX_IDLE_CONNS":       "16",
+		"GCS_HELPER_LISTEN":                "0.0.0.0:3030",
+		"GCS_HELPER_BUCKET_NAME":           "some-bucket",
+		"GCS_HELPER_LOG_LEVEL":             "warn",
+		"GCS_HELPER_MAP_PREFIX":            "/map/",
+		"GCS_HELPER_MAP_REGEX_FILTER":      `(240|360|424|480|720|1080)p\.(mp4|vtt|srt)$`,
+		"GCS_HELPER_PROXY_PREFIX":          "/proxy/",
+		"GCS_HELPER_PROXY_LOG_HEADERS":     "Accept,Range",
+		"GCS_HELPER_PROXY_TIMEOUT":         "20s",
+		"GCS_HELPER_PROXY_BUCKET_ON_PATH":  "true",
+		"GCS_HELPER_PROXY_ALLOWED_BUCKETS": "other-bucket,third-bucket",
+		"GCS_CLIENT_TIMEOUT":               "60s",
+		"GCS_CLIENT_IDLE_CONN_TIMEOUT":     "3m",
+		"GCS_CLIENT_MAX_IDLE_CONNS":        "16",
 	})
 	config, err := LoadConfig()
 	if err != nil {
@@ -32,12 +33,13 @@ func TestLoadConfig(t *testing.T) {
 	expectedConfig := Config{
 		BucketName: "some-bucket",
 		Listen:     "0.0.0.0:3030",
-		LogLevel:   "info",
+		LogLevel:   "warn",
 		Proxy: ProxyConfig{
-			Endpoint:     "/proxy/",
-			LogHeaders:   []string{"Accept", "Range"},
-			Timeout:      20 * time.Second,
-			BucketOnPath: true,
+			Endpoint:       "/proxy/",
+			LogHeaders:     []string{"Accept", "Range"},
+			Timeout:        20 * time.Second,
+			BucketOnPath:   true,
+			AllowedBuckets: []string{"other-bucket", "third-bucket"},
 		},
 		Map: MapConfig{
 			Endpoint:    "/map/",
@@ -63,7 +65,7 @@ func TestLoadConfigDefaultValues(t *testing.T) {
 	expectedConfig := Config{
 		BucketName: "some-bucket",
 		Listen:     ":8080",
-		LogLevel:   "debug",
+		LogLevel:   "info",
 		Proxy: ProxyConfig{
 			Timeout: 10 * time.Second,
 		},
@@ -103,8 +105,16 @@ func TestConfigLoggerInvalidLevel(t *testing.T) {
 	if logger.Out != os.Stdout {
 		t.Errorf("wrong log output, want os.Stdout, got %#v", logger.Out)
 	}
-	if logger.Level != logrus.DebugLevel {
-		t.Errorf("wrong log leve, want DebugLevel (%v), got %v", logrus.DebugLevel, logger.Level)
+	if logger.Level != logrus.InfoLevel {
+		t.Errorf("wrong log leve, want InfoLevel (%v), got %v", logrus.InfoLevel, logger.Level)
+	}
+}
+
+func TestLoadConfigInvalidRegexFilter(t *testing.T) {
+	setEnvs(map[string]string{"GCS_HELPER_BUCKET_NAME": "some-bucket", "GCS_HELPER_MAP_REGEX_FILTER": "(mp4"})
+	_, err := LoadConfig()
+	if err == nil {
+		t.Error("unexpected <nil> error")
 	}
 }
 

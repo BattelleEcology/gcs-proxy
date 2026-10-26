@@ -10,14 +10,15 @@ import (
 	"github.com/NYTimes/gcs-helper/v3/vodmodule"
 )
 
-// Map returns the map handler.
+// Map returns the map handler. It panics if c.Map.RegexFilter isn't a valid
+// regular expression; LoadConfig rejects such configs.
 func Map(c Config, client *storage.Client) http.Handler {
 	mapper := vodmodule.NewMapper(client.Bucket(c.BucketName))
 	filter := regexp.MustCompile(c.Map.RegexFilter)
 	logger := c.Logger()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		if r.Method != http.MethodGet {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
@@ -32,10 +33,12 @@ func Map(c Config, client *storage.Client) http.Handler {
 		})
 		if err != nil {
 			logger.WithError(err).WithField("prefix", prefix).Error("failed to map request")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to list objects", http.StatusBadGateway)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(m)
+		if err := json.NewEncoder(w).Encode(m); err != nil {
+			logger.WithError(err).WithField("prefix", prefix).Error("failed to write mapping")
+		}
 	})
 }
